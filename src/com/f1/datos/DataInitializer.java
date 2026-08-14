@@ -54,7 +54,7 @@ public class DataInitializer {
         dm.agregarPiloto(new Piloto(20, "Logan Sargeant", "Williams", "Escudero", 1, 72));
     }
 
-    private static void cargarEquipos(DataManager dm) {
+    public static void cargarEquipos(DataManager dm) {
         dm.agregarEquipo(new Equipo("Red Bull Racing", "Austria", "Honda",
                 Arrays.asList(1, 2), ""));
         dm.agregarEquipo(new Equipo("Mercedes-AMG Petronas", "Alemania", "Mercedes",
@@ -77,7 +77,7 @@ public class DataInitializer {
                 Arrays.asList(19, 20), ""));
     }
 
-    private static void cargarVehiculos(DataManager dm) {
+    public static void cargarVehiculos(DataManager dm) {
         // Red Bull Racing RB20
         dm.agregarVehiculo(crearVehiculo("Red Bull Racing", "RB20", "Honda", 360, 2.5,
                 Arrays.asList(1, 2),
@@ -201,7 +201,7 @@ public class DataInitializer {
         return new Vehiculo(equipo, modelo, motor, velMax, acel, pilotos, rendimiento, "");
     }
 
-    private static void cargarCircuitos(DataManager dm) {
+    public static void cargarCircuitos(DataManager dm) {
         // 1. Mónaco
         dm.agregarCircuito(new Circuito(
                 "Circuito de Mónaco", "Mónaco", 3.34, 78,
