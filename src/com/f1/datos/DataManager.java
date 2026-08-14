@@ -2,12 +2,13 @@ package com.f1.datos;
 
 import com.f1.modelo.*;
 
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Singleton que gestiona todos los datos del sistema usando HashMap.
- * Proporciona operaciones CRUD para pilotos, equipos, vehículos y circuitos.
+ * Singleton que gestiona todos los datos del sistema usando HashMap en memoria,
+ * pero respaldado por SQLite para Pilotos y Resultados de Carrera.
  */
 public class DataManager {
     
@@ -15,12 +16,12 @@ public class DataManager {
 
     private final Map<Integer, Piloto> pilotos;
     private final Map<String, Equipo> equipos;
-    private final Map<String, Vehiculo> vehiculos;    // key = "equipo_modelo"
+    private final Map<String, Vehiculo> vehiculos;
     private final Map<String, Circuito> circuitos;
     private final List<List<ResultadoClasificacion>> historialSesiones;
-    private final Map<String, ConfiguracionVehiculo> configuracionesGuardadas; // key = "pilotoId_circuito"
+    private final Map<String, ConfiguracionVehiculo> configuracionesGuardadas;
 
-    private int nextPilotoId;
+    private int nextPilotoId = 1;
 
     private DataManager() {
         this.pilotos = new HashMap<>();
@@ -29,17 +30,95 @@ public class DataManager {
         this.circuitos = new HashMap<>();
         this.historialSesiones = new ArrayList<>();
         this.configuracionesGuardadas = new HashMap<>();
-        this.nextPilotoId = 1;
+        
+        ConexionBD.inicializarBD();
+        cargarPilotosDesdeBD();
+        cargarHistorialDesdeBD();
     }
 
-    /**
-     * Obtiene la instancia única del DataManager.
-     */
+    private void cargarEntidadesEstaticas() {
+        if (equipos.isEmpty()) {
+            DataInitializer.cargarEquipos(this);
+            DataInitializer.cargarVehiculos(this);
+            DataInitializer.cargarCircuitos(this);
+        }
+    }
+
     public static synchronized DataManager getInstance() {
         if (instance == null) {
             instance = new DataManager();
+            
+            if (instance.pilotos.isEmpty()) {
+                DataInitializer.inicializar();
+            } else if (instance.equipos.isEmpty()) {
+                instance.cargarEntidadesEstaticas();
+            }
         }
         return instance;
+    }
+
+    private void cargarPilotosDesdeBD() {
+        String sql = "SELECT * FROM pilotos";
+        try (Connection conn = ConexionBD.conectar();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+             
+            while (rs.next()) {
+                Piloto p = new Piloto(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getString("equipo"),
+                    rs.getString("rol"),
+                    rs.getInt("experiencia"),
+                    rs.getDouble("habilidad")
+                );
+                pilotos.put(p.getId(), p);
+                nextPilotoId = Math.max(nextPilotoId, p.getId() + 1);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error cargando pilotos: " + e.getMessage());
+        }
+    }
+
+    private void cargarHistorialDesdeBD() {
+        String sql = "SELECT * FROM resultados ORDER BY sesion_id ASC, posicion ASC";
+        try (Connection conn = ConexionBD.conectar();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+             
+            int currentSesionId = -1;
+            List<ResultadoClasificacion> sesionActual = null;
+            
+            while (rs.next()) {
+                int sesionId = rs.getInt("sesion_id");
+                if (sesionId != currentSesionId) {
+                    if (sesionActual != null) {
+                        historialSesiones.add(sesionActual);
+                    }
+                    sesionActual = new ArrayList<>();
+                    currentSesionId = sesionId;
+                }
+                
+                Piloto p = pilotos.get(rs.getInt("piloto_id"));
+                if (p != null) {
+                    ResultadoClasificacion r = new ResultadoClasificacion(
+                        rs.getInt("posicion"),
+                        p,
+                        rs.getDouble("tiempo_total"),
+                        rs.getString("diferencia"),
+                        rs.getInt("pit_stops"),
+                        rs.getDouble("mejor_vuelta"),
+                        rs.getString("estado_final")
+                    );
+                    sesionActual.add(r);
+                }
+            }
+            if (sesionActual != null) {
+                historialSesiones.add(sesionActual);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error cargando historial: " + e.getMessage());
+        }
     }
 
     // ==================== PILOTOS ====================
@@ -50,17 +129,57 @@ public class DataManager {
         } else {
             nextPilotoId = Math.max(nextPilotoId, piloto.getId() + 1);
         }
+        
+        // Persistir en SQL
+        String sql = "INSERT INTO pilotos(id, nombre, equipo, rol, experiencia, habilidad) VALUES(?, ?, ?, ?, ?, ?)";
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, piloto.getId());
+            pstmt.setString(2, piloto.getNombre());
+            pstmt.setString(3, piloto.getEquipo());
+            pstmt.setString(4, piloto.getRol());
+            pstmt.setInt(5, piloto.getExperiencia());
+            pstmt.setDouble(6, piloto.getHabilidad());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error insertando piloto: " + e.getMessage());
+        }
+
         pilotos.put(piloto.getId(), piloto);
     }
 
     public void editarPiloto(int id, Piloto pilotoActualizado) {
         if (pilotos.containsKey(id)) {
             pilotoActualizado.setId(id);
+            
+            String sql = "UPDATE pilotos SET nombre=?, equipo=?, rol=?, experiencia=?, habilidad=? WHERE id=?";
+            try (Connection conn = ConexionBD.conectar();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, pilotoActualizado.getNombre());
+                pstmt.setString(2, pilotoActualizado.getEquipo());
+                pstmt.setString(3, pilotoActualizado.getRol());
+                pstmt.setInt(4, pilotoActualizado.getExperiencia());
+                pstmt.setDouble(5, pilotoActualizado.getHabilidad());
+                pstmt.setInt(6, id);
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                System.out.println("Error actualizando piloto: " + e.getMessage());
+            }
+
             pilotos.put(id, pilotoActualizado);
         }
     }
 
     public void eliminarPiloto(int id) {
+        String sql = "DELETE FROM pilotos WHERE id=?";
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error eliminando piloto: " + e.getMessage());
+        }
+        
         pilotos.remove(id);
     }
 
@@ -88,141 +207,39 @@ public class DataManager {
         return pilotos.size();
     }
 
-    // ==================== EQUIPOS ====================
-
-    public void agregarEquipo(Equipo equipo) {
-        equipos.put(equipo.getNombre(), equipo);
-    }
-
-    public void editarEquipo(String nombre, Equipo equipoActualizado) {
-        if (equipos.containsKey(nombre)) {
-            equipos.remove(nombre);
-            equipos.put(equipoActualizado.getNombre(), equipoActualizado);
-        }
-    }
-
-    public void eliminarEquipo(String nombre) {
-        equipos.remove(nombre);
-    }
-
-    public Equipo obtenerEquipo(String nombre) {
-        return equipos.get(nombre);
-    }
-
-    public List<Equipo> listarEquipos() {
-        return new ArrayList<>(equipos.values()).stream()
-                .sorted(Comparator.comparing(Equipo::getNombre))
-                .collect(Collectors.toList());
-    }
-
-    public List<Equipo> buscarEquipos(String termino) {
-        String lower = termino.toLowerCase();
-        return equipos.values().stream()
-                .filter(e -> e.getNombre().toLowerCase().contains(lower)
-                        || e.getPais().toLowerCase().contains(lower)
-                        || e.getMotor().toLowerCase().contains(lower))
-                .sorted(Comparator.comparing(Equipo::getNombre))
-                .collect(Collectors.toList());
-    }
-
-    public int getCantidadEquipos() {
-        return equipos.size();
-    }
-
-    // ==================== VEHÍCULOS ====================
-
-    private String vehiculoKey(Vehiculo v) {
-        return v.getEquipo() + "_" + v.getModelo();
-    }
-
-    public void agregarVehiculo(Vehiculo vehiculo) {
-        vehiculos.put(vehiculoKey(vehiculo), vehiculo);
-    }
-
-    public void editarVehiculo(String equipoOriginal, String modeloOriginal, Vehiculo vehiculoActualizado) {
-        String keyOriginal = equipoOriginal + "_" + modeloOriginal;
-        vehiculos.remove(keyOriginal);
-        vehiculos.put(vehiculoKey(vehiculoActualizado), vehiculoActualizado);
-    }
-
-    public void eliminarVehiculo(String equipo, String modelo) {
-        vehiculos.remove(equipo + "_" + modelo);
-    }
-
-    public Vehiculo obtenerVehiculo(String equipo, String modelo) {
-        return vehiculos.get(equipo + "_" + modelo);
-    }
-
-    public Vehiculo obtenerVehiculoPorEquipo(String equipo) {
-        return vehiculos.values().stream()
-                .filter(v -> v.getEquipo().equals(equipo))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public List<Vehiculo> listarVehiculos() {
-        return new ArrayList<>(vehiculos.values()).stream()
-                .sorted(Comparator.comparing(Vehiculo::getEquipo))
-                .collect(Collectors.toList());
-    }
-
-    public List<Vehiculo> buscarVehiculos(String termino) {
-        String lower = termino.toLowerCase();
-        return vehiculos.values().stream()
-                .filter(v -> v.getEquipo().toLowerCase().contains(lower)
-                        || v.getModelo().toLowerCase().contains(lower)
-                        || v.getMotor().toLowerCase().contains(lower))
-                .sorted(Comparator.comparing(Vehiculo::getEquipo))
-                .collect(Collectors.toList());
-    }
-
-    public int getCantidadVehiculos() {
-        return vehiculos.size();
-    }
-
-    // ==================== CIRCUITOS ====================
-
-    public void agregarCircuito(Circuito circuito) {
-        circuitos.put(circuito.getNombre(), circuito);
-    }
-
-    public void editarCircuito(String nombre, Circuito circuitoActualizado) {
-        if (circuitos.containsKey(nombre)) {
-            circuitos.remove(nombre);
-            circuitos.put(circuitoActualizado.getNombre(), circuitoActualizado);
-        }
-    }
-
-    public void eliminarCircuito(String nombre) {
-        circuitos.remove(nombre);
-    }
-
-    public Circuito obtenerCircuito(String nombre) {
-        return circuitos.get(nombre);
-    }
-
-    public List<Circuito> listarCircuitos() {
-        return new ArrayList<>(circuitos.values()).stream()
-                .sorted(Comparator.comparing(Circuito::getNombre))
-                .collect(Collectors.toList());
-    }
-
-    public List<Circuito> buscarCircuitos(String termino) {
-        String lower = termino.toLowerCase();
-        return circuitos.values().stream()
-                .filter(c -> c.getNombre().toLowerCase().contains(lower)
-                        || c.getPais().toLowerCase().contains(lower))
-                .sorted(Comparator.comparing(Circuito::getNombre))
-                .collect(Collectors.toList());
-    }
-
-    public int getCantidadCircuitos() {
-        return circuitos.size();
-    }
-
     // ==================== HISTORIAL ====================
 
     public void guardarSesion(List<ResultadoClasificacion> resultados) {
+        String sqlSesion = "INSERT INTO sesiones(fecha) VALUES(CURRENT_TIMESTAMP)";
+        String sqlResultado = "INSERT INTO resultados(sesion_id, posicion, piloto_id, tiempo_total, diferencia, pit_stops, mejor_vuelta, estado_final) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmtSesion = conn.prepareStatement(sqlSesion, Statement.RETURN_GENERATED_KEYS)) {
+            
+            pstmtSesion.executeUpdate();
+            ResultSet rsKeys = pstmtSesion.getGeneratedKeys();
+            if (rsKeys.next()) {
+                int sesionId = rsKeys.getInt(1);
+                
+                try (PreparedStatement pstmtRes = conn.prepareStatement(sqlResultado)) {
+                    for (ResultadoClasificacion r : resultados) {
+                        pstmtRes.setInt(1, sesionId);
+                        pstmtRes.setInt(2, r.getPosicion());
+                        pstmtRes.setInt(3, r.getPiloto().getId());
+                        pstmtRes.setDouble(4, r.getTiempoTotal());
+                        pstmtRes.setString(5, r.getDiferencia());
+                        pstmtRes.setInt(6, r.getPitStops());
+                        pstmtRes.setDouble(7, r.getMejorVuelta());
+                        pstmtRes.setString(8, r.getEstadoFinal());
+                        pstmtRes.addBatch();
+                    }
+                    pstmtRes.executeBatch();
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error guardando sesión: " + e.getMessage());
+        }
+        
         historialSesiones.add(new ArrayList<>(resultados));
     }
 
@@ -234,55 +251,49 @@ public class DataManager {
         return historialSesiones.size();
     }
 
+    // ==================== EQUIPOS ====================
+    public void agregarEquipo(Equipo equipo) { equipos.put(equipo.getNombre(), equipo); }
+    public void editarEquipo(String nombre, Equipo e) { if(equipos.containsKey(nombre)) { equipos.remove(nombre); equipos.put(e.getNombre(), e); } }
+    public void eliminarEquipo(String nombre) { equipos.remove(nombre); }
+    public Equipo obtenerEquipo(String nombre) { return equipos.get(nombre); }
+    public List<Equipo> listarEquipos() { return new ArrayList<>(equipos.values()).stream().sorted(Comparator.comparing(Equipo::getNombre)).collect(Collectors.toList()); }
+    public List<Equipo> buscarEquipos(String termino) { String l = termino.toLowerCase(); return equipos.values().stream().filter(e -> e.getNombre().toLowerCase().contains(l) || e.getPais().toLowerCase().contains(l)).sorted(Comparator.comparing(Equipo::getNombre)).collect(Collectors.toList()); }
+    public int getCantidadEquipos() { return equipos.size(); }
+    public List<String> obtenerNombresEquipos() { return equipos.keySet().stream().sorted().collect(Collectors.toList()); }
+
+    // ==================== VEHÍCULOS ====================
+    private String vehiculoKey(Vehiculo v) { return v.getEquipo() + "_" + v.getModelo(); }
+    public void agregarVehiculo(Vehiculo vehiculo) { vehiculos.put(vehiculoKey(vehiculo), vehiculo); }
+    public void editarVehiculo(String eOriginal, String mOriginal, Vehiculo vAct) { vehiculos.remove(eOriginal + "_" + mOriginal); vehiculos.put(vehiculoKey(vAct), vAct); }
+    public void eliminarVehiculo(String equipo, String modelo) { vehiculos.remove(equipo + "_" + modelo); }
+    public Vehiculo obtenerVehiculo(String equipo, String modelo) { return vehiculos.get(equipo + "_" + modelo); }
+    public Vehiculo obtenerVehiculoPorEquipo(String equipo) { return vehiculos.values().stream().filter(v -> v.getEquipo().equals(equipo)).findFirst().orElse(null); }
+    public List<Vehiculo> listarVehiculos() { return new ArrayList<>(vehiculos.values()).stream().sorted(Comparator.comparing(Vehiculo::getEquipo)).collect(Collectors.toList()); }
+    public List<Vehiculo> buscarVehiculos(String termino) { String l = termino.toLowerCase(); return vehiculos.values().stream().filter(v -> v.getEquipo().toLowerCase().contains(l) || v.getModelo().toLowerCase().contains(l)).sorted(Comparator.comparing(Vehiculo::getEquipo)).collect(Collectors.toList()); }
+    public int getCantidadVehiculos() { return vehiculos.size(); }
+
+    // ==================== CIRCUITOS ====================
+    public void agregarCircuito(Circuito circuito) { circuitos.put(circuito.getNombre(), circuito); }
+    public void editarCircuito(String nombre, Circuito cAct) { if(circuitos.containsKey(nombre)) { circuitos.remove(nombre); circuitos.put(cAct.getNombre(), cAct); } }
+    public void eliminarCircuito(String nombre) { circuitos.remove(nombre); }
+    public Circuito obtenerCircuito(String nombre) { return circuitos.get(nombre); }
+    public List<Circuito> listarCircuitos() { return new ArrayList<>(circuitos.values()).stream().sorted(Comparator.comparing(Circuito::getNombre)).collect(Collectors.toList()); }
+    public List<Circuito> buscarCircuitos(String termino) { String l = termino.toLowerCase(); return circuitos.values().stream().filter(c -> c.getNombre().toLowerCase().contains(l) || c.getPais().toLowerCase().contains(l)).sorted(Comparator.comparing(Circuito::getNombre)).collect(Collectors.toList()); }
+    public int getCantidadCircuitos() { return circuitos.size(); }
+    public List<String> obtenerNombresCircuitos() { return circuitos.keySet().stream().sorted().collect(Collectors.toList()); }
+
     // ==================== CONFIGURACIONES ====================
-
-    public void guardarConfiguracion(int pilotoId, String circuito, ConfiguracionVehiculo config) {
-        configuracionesGuardadas.put(pilotoId + "_" + circuito, config);
-    }
-
-    public ConfiguracionVehiculo obtenerConfiguracion(int pilotoId, String circuito) {
-        return configuracionesGuardadas.get(pilotoId + "_" + circuito);
-    }
-
-    public List<String> listarConfiguracionesGuardadas() {
-        return new ArrayList<>(configuracionesGuardadas.keySet());
-    }
+    public void guardarConfiguracion(int pilotoId, String circuito, ConfiguracionVehiculo config) { configuracionesGuardadas.put(pilotoId + "_" + circuito, config); }
+    public ConfiguracionVehiculo obtenerConfiguracion(int pilotoId, String circuito) { return configuracionesGuardadas.get(pilotoId + "_" + circuito); }
+    public List<String> listarConfiguracionesGuardadas() { return new ArrayList<>(configuracionesGuardadas.keySet()); }
 
     // ==================== UTILIDADES ====================
-
-    /**
-     * Obtiene los pilotos de un equipo específico.
-     */
     public List<Piloto> obtenerPilotosPorEquipo(String equipo) {
-        return pilotos.values().stream()
-                .filter(p -> p.getEquipo().equals(equipo))
-                .collect(Collectors.toList());
+        return pilotos.values().stream().filter(p -> p.getEquipo().equals(equipo)).collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene los nombres de todos los equipos.
-     */
-    public List<String> obtenerNombresEquipos() {
-        return equipos.keySet().stream().sorted().collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene los nombres de todos los circuitos.
-     */
-    public List<String> obtenerNombresCircuitos() {
-        return circuitos.keySet().stream().sorted().collect(Collectors.toList());
-    }
-
-    /**
-     * Reinicia todos los datos (útil para testing).
-     */
     public void reiniciar() {
-        pilotos.clear();
-        equipos.clear();
-        vehiculos.clear();
-        circuitos.clear();
-        historialSesiones.clear();
-        configuracionesGuardadas.clear();
-        nextPilotoId = 1;
+        pilotos.clear(); equipos.clear(); vehiculos.clear(); circuitos.clear();
+        historialSesiones.clear(); configuracionesGuardadas.clear(); nextPilotoId = 1;
     }
 }

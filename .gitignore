@@ -24,3 +24,6 @@ build/
 
 # Logs
 *.log
+
+# SQLite Database
+f1_data.db
