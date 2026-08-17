@@ -31,7 +31,7 @@ public class MotorSimulacion {
     public MotorSimulacion(Circuito circuito, ConfiguracionVehiculo configUsuario,
                             SimulacionListener listener) {
         this.circuito = circuito;
-        this.totalVueltas = Math.min(circuito.getVueltas(), 15); // Limitar para demo
+        this.totalVueltas = circuito.getVueltas(); // Usar las vueltas reales del circuito
         this.listener = listener;
         this.generadorClima = new GeneradorClima();
         this.vueltaGlobal = new AtomicInteger(0);

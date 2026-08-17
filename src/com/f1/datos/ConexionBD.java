@@ -46,11 +46,26 @@ public class ConexionBD {
                 "estado_final TEXT, " +
                 "FOREIGN KEY(sesion_id) REFERENCES sesiones(id))";
 
+        String sqlEquipos = "CREATE TABLE IF NOT EXISTS equipos (" +
+                "nombre TEXT PRIMARY KEY, " +
+                "data_json TEXT)";
+
+        String sqlVehiculos = "CREATE TABLE IF NOT EXISTS vehiculos (" +
+                "id TEXT PRIMARY KEY, " +
+                "data_json TEXT)";
+
+        String sqlCircuitos = "CREATE TABLE IF NOT EXISTS circuitos (" +
+                "nombre TEXT PRIMARY KEY, " +
+                "data_json TEXT)";
+
         try (Connection conn = conectar(); Statement stmt = conn.createStatement()) {
             if (conn != null) {
                 stmt.execute(sqlPilotos);
                 stmt.execute(sqlSesiones);
                 stmt.execute(sqlResultados);
+                stmt.execute(sqlEquipos);
+                stmt.execute(sqlVehiculos);
+                stmt.execute(sqlCircuitos);
             }
         } catch (SQLException e) {
             System.out.println("Error creando tablas: " + e.getMessage());

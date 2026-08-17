@@ -5,6 +5,7 @@ import com.f1.modelo.*;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.google.gson.Gson;
 
 /**
  * Singleton que gestiona todos los datos del sistema usando HashMap en memoria,
@@ -22,6 +23,7 @@ public class DataManager {
     private final Map<String, ConfiguracionVehiculo> configuracionesGuardadas;
 
     private int nextPilotoId = 1;
+    private final Gson gson = new Gson();
 
     private DataManager() {
         this.pilotos = new HashMap<>();
@@ -34,6 +36,9 @@ public class DataManager {
         ConexionBD.inicializarBD();
         cargarPilotosDesdeBD();
         cargarHistorialDesdeBD();
+        cargarEquiposDesdeBD();
+        cargarVehiculosDesdeBD();
+        cargarCircuitosDesdeBD();
     }
 
     private void cargarEntidadesEstaticas() {
@@ -131,7 +136,9 @@ public class DataManager {
         }
         
         // Persistir en SQL
-        String sql = "INSERT INTO pilotos(id, nombre, equipo, rol, experiencia, habilidad) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO pilotos(id, nombre, equipo, rol, experiencia, habilidad) VALUES(?, ?, ?, ?, ?, ?) " +
+                     "ON CONFLICT(id) DO UPDATE SET nombre=excluded.nombre, equipo=excluded.equipo, rol=excluded.rol, " +
+                     "experiencia=excluded.experiencia, habilidad=excluded.habilidad";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, piloto.getId());
@@ -251,10 +258,72 @@ public class DataManager {
         return historialSesiones.size();
     }
 
+    private void cargarEquiposDesdeBD() {
+        String sql = "SELECT * FROM equipos";
+        try (Connection conn = ConexionBD.conectar(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Equipo e = gson.fromJson(rs.getString("data_json"), Equipo.class);
+                equipos.put(e.getNombre(), e);
+            }
+        } catch (SQLException e) { System.out.println("Error cargando equipos: " + e.getMessage()); }
+    }
+
+    private void cargarVehiculosDesdeBD() {
+        String sql = "SELECT * FROM vehiculos";
+        try (Connection conn = ConexionBD.conectar(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Vehiculo v = gson.fromJson(rs.getString("data_json"), Vehiculo.class);
+                vehiculos.put(vehiculoKey(v), v);
+            }
+        } catch (SQLException e) { System.out.println("Error cargando vehiculos: " + e.getMessage()); }
+    }
+
+    private void cargarCircuitosDesdeBD() {
+        String sql = "SELECT * FROM circuitos";
+        try (Connection conn = ConexionBD.conectar(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Circuito c = gson.fromJson(rs.getString("data_json"), Circuito.class);
+                circuitos.put(c.getNombre(), c);
+            }
+        } catch (SQLException e) { System.out.println("Error cargando circuitos: " + e.getMessage()); }
+    }
+
+    private void guardarEntidadJSON(String tabla, String pkColumn, String pkValue, Object entidad) {
+        String json = gson.toJson(entidad);
+        String sql = "INSERT INTO " + tabla + "(" + pkColumn + ", data_json) VALUES(?, ?) " +
+                     "ON CONFLICT(" + pkColumn + ") DO UPDATE SET data_json=excluded.data_json";
+        try (Connection conn = ConexionBD.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, pkValue);
+            pstmt.setString(2, json);
+            pstmt.executeUpdate();
+        } catch (SQLException e) { System.out.println("Error guardando " + tabla + ": " + e.getMessage()); }
+    }
+
+    private void eliminarEntidadJSON(String tabla, String pkColumn, String pkValue) {
+        String sql = "DELETE FROM " + tabla + " WHERE " + pkColumn + "=?";
+        try (Connection conn = ConexionBD.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, pkValue);
+            pstmt.executeUpdate();
+        } catch (SQLException e) { System.out.println("Error eliminando " + tabla + ": " + e.getMessage()); }
+    }
+
     // ==================== EQUIPOS ====================
-    public void agregarEquipo(Equipo equipo) { equipos.put(equipo.getNombre(), equipo); }
-    public void editarEquipo(String nombre, Equipo e) { if(equipos.containsKey(nombre)) { equipos.remove(nombre); equipos.put(e.getNombre(), e); } }
-    public void eliminarEquipo(String nombre) { equipos.remove(nombre); }
+    public void agregarEquipo(Equipo equipo) { 
+        equipos.put(equipo.getNombre(), equipo); 
+        guardarEntidadJSON("equipos", "nombre", equipo.getNombre(), equipo);
+    }
+    public void editarEquipo(String nombre, Equipo e) { 
+        if(equipos.containsKey(nombre)) { 
+            equipos.remove(nombre); 
+            if (!nombre.equals(e.getNombre())) eliminarEntidadJSON("equipos", "nombre", nombre);
+            equipos.put(e.getNombre(), e); 
+            guardarEntidadJSON("equipos", "nombre", e.getNombre(), e);
+        } 
+    }
+    public void eliminarEquipo(String nombre) { 
+        equipos.remove(nombre); 
+        eliminarEntidadJSON("equipos", "nombre", nombre);
+    }
     public Equipo obtenerEquipo(String nombre) { return equipos.get(nombre); }
     public List<Equipo> listarEquipos() { return new ArrayList<>(equipos.values()).stream().sorted(Comparator.comparing(Equipo::getNombre)).collect(Collectors.toList()); }
     public List<Equipo> buscarEquipos(String termino) { String l = termino.toLowerCase(); return equipos.values().stream().filter(e -> e.getNombre().toLowerCase().contains(l) || e.getPais().toLowerCase().contains(l)).sorted(Comparator.comparing(Equipo::getNombre)).collect(Collectors.toList()); }
@@ -263,9 +332,24 @@ public class DataManager {
 
     // ==================== VEHÍCULOS ====================
     private String vehiculoKey(Vehiculo v) { return v.getEquipo() + "_" + v.getModelo(); }
-    public void agregarVehiculo(Vehiculo vehiculo) { vehiculos.put(vehiculoKey(vehiculo), vehiculo); }
-    public void editarVehiculo(String eOriginal, String mOriginal, Vehiculo vAct) { vehiculos.remove(eOriginal + "_" + mOriginal); vehiculos.put(vehiculoKey(vAct), vAct); }
-    public void eliminarVehiculo(String equipo, String modelo) { vehiculos.remove(equipo + "_" + modelo); }
+    public void agregarVehiculo(Vehiculo vehiculo) { 
+        String key = vehiculoKey(vehiculo);
+        vehiculos.put(key, vehiculo); 
+        guardarEntidadJSON("vehiculos", "id", key, vehiculo);
+    }
+    public void editarVehiculo(String eOriginal, String mOriginal, Vehiculo vAct) { 
+        String keyOld = eOriginal + "_" + mOriginal;
+        vehiculos.remove(keyOld); 
+        String keyNew = vehiculoKey(vAct);
+        if (!keyOld.equals(keyNew)) eliminarEntidadJSON("vehiculos", "id", keyOld);
+        vehiculos.put(keyNew, vAct); 
+        guardarEntidadJSON("vehiculos", "id", keyNew, vAct);
+    }
+    public void eliminarVehiculo(String equipo, String modelo) { 
+        String key = equipo + "_" + modelo;
+        vehiculos.remove(key); 
+        eliminarEntidadJSON("vehiculos", "id", key);
+    }
     public Vehiculo obtenerVehiculo(String equipo, String modelo) { return vehiculos.get(equipo + "_" + modelo); }
     public Vehiculo obtenerVehiculoPorEquipo(String equipo) { return vehiculos.values().stream().filter(v -> v.getEquipo().equals(equipo)).findFirst().orElse(null); }
     public List<Vehiculo> listarVehiculos() { return new ArrayList<>(vehiculos.values()).stream().sorted(Comparator.comparing(Vehiculo::getEquipo)).collect(Collectors.toList()); }
@@ -273,9 +357,22 @@ public class DataManager {
     public int getCantidadVehiculos() { return vehiculos.size(); }
 
     // ==================== CIRCUITOS ====================
-    public void agregarCircuito(Circuito circuito) { circuitos.put(circuito.getNombre(), circuito); }
-    public void editarCircuito(String nombre, Circuito cAct) { if(circuitos.containsKey(nombre)) { circuitos.remove(nombre); circuitos.put(cAct.getNombre(), cAct); } }
-    public void eliminarCircuito(String nombre) { circuitos.remove(nombre); }
+    public void agregarCircuito(Circuito circuito) { 
+        circuitos.put(circuito.getNombre(), circuito); 
+        guardarEntidadJSON("circuitos", "nombre", circuito.getNombre(), circuito);
+    }
+    public void editarCircuito(String nombre, Circuito cAct) { 
+        if(circuitos.containsKey(nombre)) { 
+            circuitos.remove(nombre); 
+            if (!nombre.equals(cAct.getNombre())) eliminarEntidadJSON("circuitos", "nombre", nombre);
+            circuitos.put(cAct.getNombre(), cAct); 
+            guardarEntidadJSON("circuitos", "nombre", cAct.getNombre(), cAct);
+        } 
+    }
+    public void eliminarCircuito(String nombre) { 
+        circuitos.remove(nombre); 
+        eliminarEntidadJSON("circuitos", "nombre", nombre);
+    }
     public Circuito obtenerCircuito(String nombre) { return circuitos.get(nombre); }
     public List<Circuito> listarCircuitos() { return new ArrayList<>(circuitos.values()).stream().sorted(Comparator.comparing(Circuito::getNombre)).collect(Collectors.toList()); }
     public List<Circuito> buscarCircuitos(String termino) { String l = termino.toLowerCase(); return circuitos.values().stream().filter(c -> c.getNombre().toLowerCase().contains(l) || c.getPais().toLowerCase().contains(l)).sorted(Comparator.comparing(Circuito::getNombre)).collect(Collectors.toList()); }
