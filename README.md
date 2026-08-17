@@ -1,6 +1,6 @@
 # 🏎️ Formula 1 - Simulación en Java
 
-# DIAPOSITIVAS : https://drive.google.com/drive/folders/10ngEaurSDW1NG5CtnBJx-SRcnXHXRLqV?usp=sharing
+ DIAPOSITIVAS : https://drive.google.com/drive/folders/10ngEaurSDW1NG5CtnBJx-SRcnXHXRLqV?usp=sharing
 
 ## Descripción
 Simulación interactiva de Fórmula 1 desarrollada en **Java Swing** con sistema de concurrencia (hilos), gestión de clima dinámico, combustible, neumáticos y clasificación en tiempo real.
