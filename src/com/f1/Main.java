@@ -1,15 +1,16 @@
 package com.f1;
 
-import com.f1.datos.DataInitializer;
-import com.f1.gui.MainFrame;
-import com.f1.gui.util.F1Colors;
+import com.f1.infrastructure.adapter.out.persistence.DataInitializer;
+import com.f1.infrastructure.adapter.in.gui.MainFrame;
+import com.f1.infrastructure.adapter.in.gui.SplashFrame;
+import com.f1.infrastructure.adapter.in.gui.util.F1Colors;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
- * Punto de entrada de la aplicación Formula 1 Simulation.
- * Inicializa los datos y lanza la interfaz gráfica.
+ * Punto de entrada de la aplicaciÃ³n Formula 1 Simulation.
+ * Inicializa los datos y lanza la interfaz grÃ¡fica.
  */
 public class Main {
 
@@ -20,10 +21,10 @@ public class Main {
         // Cargar datos iniciales
         DataInitializer.inicializar();
 
-        // Lanzar GUI en el Event Dispatch Thread
+        // Lanzar Splash Screen en el Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
-            MainFrame frame = new MainFrame();
-            frame.setVisible(true);
+            SplashFrame splash = new SplashFrame();
+            splash.setVisible(true);
         });
     }
 
