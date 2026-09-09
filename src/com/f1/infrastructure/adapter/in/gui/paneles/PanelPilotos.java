@@ -10,6 +10,7 @@ import com.f1.infrastructure.adapter.in.gui.util.F1Fonts;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.util.List;
 
@@ -80,22 +81,66 @@ public class PanelPilotos extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // --- ZONA CENTRAL (GRID) ---
-        // Usamos GridLayout(0, 7) para forzar 7 columnas y múltiples filas
-        gridPanel = new JPanel(new GridLayout(0, 7, 15, 15));
+        // Usamos GridLayout(2, 0) para forzar 2 filas y que crezca horizontalmente infinitamente
+        gridPanel = new JPanel(new GridLayout(2, 0, 15, 15));
         gridPanel.setBackground(F1Colors.BG_DARK);
         
-        // Contenedor extra para que el grid suba al tope
-        JPanel gridWrapper = new JPanel(new BorderLayout());
+        // Contenedor extra para centrar verticalmente si es necesario
+        JPanel gridWrapper = new JPanel(new GridBagLayout());
         gridWrapper.setBackground(F1Colors.BG_DARK);
-        gridWrapper.add(gridPanel, BorderLayout.NORTH);
+        GridBagConstraints gbcGrid = new GridBagConstraints();
+        gbcGrid.anchor = GridBagConstraints.WEST;
+        gbcGrid.weightx = 1.0;
+        gbcGrid.weighty = 1.0;
+        gridWrapper.add(gridPanel, gbcGrid);
 
         JScrollPane scrollPane = new JScrollPane(gridWrapper);
         scrollPane.setBorder(null);
         scrollPane.setBackground(F1Colors.BG_DARK);
         scrollPane.getViewport().setBackground(F1Colors.BG_DARK);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(20);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        
+        // Personalizar la barra de desplazamiento horizontal estilo juego
+        scrollPane.getHorizontalScrollBar().setUI(new BasicScrollBarUI() {
+            @Override
+            protected void configureScrollBarColors() {
+                this.thumbColor = new Color(70, 70, 90);
+                this.trackColor = F1Colors.BG_DARK;
+            }
+            @Override
+            protected JButton createDecreaseButton(int orientation) {
+                return createZeroButton();
+            }
+            @Override
+            protected JButton createIncreaseButton(int orientation) {
+                return createZeroButton();
+            }
+            private JButton createZeroButton() {
+                JButton jbutton = new JButton();
+                jbutton.setPreferredSize(new Dimension(0, 0));
+                jbutton.setMinimumSize(new Dimension(0, 0));
+                jbutton.setMaximumSize(new Dimension(0, 0));
+                return jbutton;
+            }
+            @Override
+            protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+                if(thumbBounds.isEmpty() || !scrollbar.isEnabled()) return;
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(isDragging ? F1Colors.F1_RED : thumbColor);
+                g2.fillRoundRect(thumbBounds.x, thumbBounds.y + 4, thumbBounds.width, thumbBounds.height - 8, 8, 8);
+                g2.dispose();
+            }
+            @Override
+            protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(trackColor);
+                g2.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
+                g2.dispose();
+            }
+        });
 
         add(scrollPane, BorderLayout.CENTER);
 
