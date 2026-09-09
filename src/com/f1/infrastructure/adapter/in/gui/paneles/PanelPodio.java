@@ -14,7 +14,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Panel del podio con visualizaciÃ³n de los 3 primeros y tabla completa.
+ * Panel del podio con visualización de los 3 primeros y tabla completa.
  */
 public class PanelPodio extends JPanel {
 
@@ -36,13 +36,13 @@ public class PanelPodio extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
-        JLabel titleLabel = new JLabel("ðŸ† Podio y ClasificaciÃ³n Final");
+        JLabel titleLabel = new JLabel("> CLASIFICACIÓN FINAL Y PODIO _");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
         add(headerPanel, BorderLayout.NORTH);
 
-        // Panel central con podio + estadÃ­sticas
+        // Panel central con podio + estadísticas
         JPanel topPanel = new JPanel(new BorderLayout(15, 0));
         topPanel.setOpaque(false);
         topPanel.setPreferredSize(new Dimension(0, 370));
@@ -51,7 +51,7 @@ public class PanelPodio extends JPanel {
         podiumPanel = new PodiumPanel();
         topPanel.add(podiumPanel, BorderLayout.CENTER);
 
-        // EstadÃ­sticas laterales
+        // Estadísticas laterales
         JPanel statsPanel = new JPanel();
         statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
         statsPanel.setBackground(F1Colors.BG_CARD);
@@ -60,21 +60,21 @@ public class PanelPodio extends JPanel {
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)));
         statsPanel.setPreferredSize(new Dimension(220, 0));
 
-        JLabel statsTitle = new JLabel("ðŸ“Š EstadÃ­sticas");
+        JLabel statsTitle = new JLabel(" Estadísticas");
         statsTitle.setFont(F1Fonts.SECTION_TITLE);
         statsTitle.setForeground(F1Colors.F1_RED);
         statsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         statsPanel.add(statsTitle);
         statsPanel.add(Box.createVerticalStrut(15));
 
-        lblTiempoGanador = createStatItem(statsPanel, "ðŸ† Tiempo Ganador:");
-        lblMejorVuelta = createStatItem(statsPanel, "âš¡ Mejor Vuelta:");
-        lblTotalPits = createStatItem(statsPanel, "ðŸ”§ Total Pit Stops:");
+        lblTiempoGanador = createStatItem(statsPanel, "> Tiempo Ganador:");
+        lblMejorVuelta = createStatItem(statsPanel, "> Mejor Vuelta:");
+        lblTotalPits = createStatItem(statsPanel, "> Total Pit Stops:");
 
         topPanel.add(statsPanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.CENTER);
 
-        // Tabla de clasificaciÃ³n completa
+        // Tabla de clasificación completa
         String[] columns = {"Pos", "Piloto", "Equipo", "Tiempo Total", "Diferencia",
                 "Pit Stops", "Mejor Vuelta", "Estado"};
         tableModel = new DefaultTableModel(columns, 0) {
@@ -161,7 +161,7 @@ public class PanelPodio extends JPanel {
                     resultados.get(2).getTiempoFormateado());
         }
 
-        // EstadÃ­sticas
+        // Estadísticas
         lblTiempoGanador.setText(resultados.get(0).getTiempoFormateado());
 
         double mejorVuelta = resultados.stream()

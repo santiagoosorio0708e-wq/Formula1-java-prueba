@@ -15,8 +15,8 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Panel de simulaciÃ³n en tiempo real con tabla de posiciones,
- * indicadores de combustible/neumÃ¡ticos y alertas de pit stop.
+ * Panel de simulación en tiempo real con tabla de posiciones,
+ * indicadores de combustible/neumáticos y alertas de pit stop.
  */
 public class PanelSimulacion extends JPanel implements SimulacionListener {
 
@@ -47,9 +47,9 @@ public class PanelSimulacion extends JPanel implements SimulacionListener {
         infoPanel.setOpaque(false);
 
         lblCircuito = createInfoLabel(infoPanel, "ðŸ›£ï¸ Circuito", "Sin seleccionar");
-        lblVuelta = createInfoLabel(infoPanel, "ðŸ”„ Vuelta", "0 / 0");
+        lblVuelta = createInfoLabel(infoPanel, " Vuelta", "0 / 0");
         lblClima = createInfoLabel(infoPanel, "ðŸŒ¤ï¸ Clima", "---");
-        lblEstado = createInfoLabel(infoPanel, "ðŸ“Š Estado", "Esperando...");
+        lblEstado = createInfoLabel(infoPanel, " Estado", "Esperando...");
 
         headerPanel.add(infoPanel, BorderLayout.CENTER);
 
@@ -91,8 +91,8 @@ public class PanelSimulacion extends JPanel implements SimulacionListener {
         add(headerPanel, BorderLayout.NORTH);
 
         // === TABLA DE POSICIONES ===
-        String[] columns = {"Pos", "Piloto", "Equipo", "Ãšltimo Tiempo", "Tiempo Total",
-                "Gap", "Combustible", "NeumÃ¡ticos", "Pits", "Estado"};
+        String[] columns = {"Pos", "Piloto", "Equipo", "Último Tiempo", "Tiempo Total",
+                "Gap", "Combustible", "Neumáticos", "Pits", "Estado"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -127,8 +127,8 @@ public class PanelSimulacion extends JPanel implements SimulacionListener {
                     c.setForeground(F1Colors.TEXT_PRIMARY);
 
                     String val = value != null ? value.toString() : "";
-                    // Colorear combustible y neumÃ¡ticos
-                    if (column == 6 || column == 7) { // Combustible / NeumÃ¡ticos
+                    // Colorear combustible y neumáticos
+                    if (column == 6 || column == 7) { // Combustible / Neumáticos
                         try {
                             String numStr = val.replace("%", "").trim();
                             double num = Double.parseDouble(numStr);
@@ -136,14 +136,14 @@ public class PanelSimulacion extends JPanel implements SimulacionListener {
                                 if (num <= 20) c.setForeground(F1Colors.STATUS_DANGER);
                                 else if (num <= 50) c.setForeground(F1Colors.STATUS_WARNING);
                                 else c.setForeground(F1Colors.STATUS_OK);
-                            } else { // NeumÃ¡ticos (invertido)
+                            } else { // Neumáticos (invertido)
                                 if (num >= 80) c.setForeground(F1Colors.STATUS_DANGER);
                                 else if (num >= 50) c.setForeground(F1Colors.STATUS_WARNING);
                                 else c.setForeground(F1Colors.STATUS_OK);
                             }
                         } catch (NumberFormatException ignored) {}
                     }
-                    // Colorear posiciÃ³n
+                    // Colorear posición
                     if (column == 0) {
                         if (row == 0) c.setForeground(F1Colors.PODIO_GOLD);
                         else if (row == 1) c.setForeground(F1Colors.PODIO_SILVER);
@@ -225,10 +225,10 @@ public class PanelSimulacion extends JPanel implements SimulacionListener {
     }
 
     /**
-     * Inicia una nueva simulaciÃ³n con el circuito y configuraciÃ³n dados.
+     * Inicia una nueva simulación con el circuito y configuración dados.
      */
     public void iniciarSimulacion(Circuito circuito, ConfiguracionVehiculo config) {
-        // Detener simulaciÃ³n anterior si existe
+        // Detener simulación anterior si existe
         if (motor != null && motor.isEnCurso()) {
             motor.detenerCarrera();
         }

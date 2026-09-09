@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Panel CRUD completo para la gestiÃ³n de equipos.
+ * Panel CRUD completo para la gestión de equipos.
  */
 public class PanelEquipos extends JPanel {
 
@@ -36,7 +36,7 @@ public class PanelEquipos extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("ðŸ¢ GestiÃ³n de Equipos");
+        JLabel titleLabel = new JLabel("ðŸ¢ Gestión de Equipos");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -87,7 +87,7 @@ public class PanelEquipos extends JPanel {
         headerPanel.add(toolbar, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
-        String[] columns = {"Nombre", "PaÃ­s", "Motor", "Pilotos"};
+        String[] columns = {"Nombre", "País", "Motor", "Pilotos"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -135,7 +135,7 @@ public class PanelEquipos extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
 
         JTextField txtNombre = addField(form, gbc, "Nombre:", 0);
-        JTextField txtPais = addField(form, gbc, "PaÃ­s:", 1);
+        JTextField txtPais = addField(form, gbc, "País:", 1);
         JTextField txtMotor = addField(form, gbc, "Motor:", 2);
 
         if (existente != null) {

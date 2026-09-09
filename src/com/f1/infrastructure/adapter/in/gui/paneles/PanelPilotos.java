@@ -13,7 +13,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Panel CRUD completo para la gestiÃ³n de pilotos.
+ * Panel CRUD completo para la gestión de pilotos.
  */
 public class PanelPilotos extends JPanel {
 
@@ -34,7 +34,7 @@ public class PanelPilotos extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("ðŸ GestiÃ³n de Pilotos");
+        JLabel titleLabel = new JLabel("> GESTIÓN DE PILOTOS _");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -60,15 +60,15 @@ public class PanelPilotos extends JPanel {
         });
         toolbar.add(searchField);
 
-        F1Button btnAgregar = new F1Button("+ Agregar", F1Button.Style.PRIMARY);
+        F1Button btnAgregar = new F1Button("[+ AGREGAR]", F1Button.Style.PRIMARY);
         btnAgregar.addActionListener(e -> mostrarDialogoAgregar());
         toolbar.add(btnAgregar);
 
-        F1Button btnEditar = new F1Button("âœï¸ Editar", F1Button.Style.SECONDARY);
+        F1Button btnEditar = new F1Button("[ EDITAR ]", F1Button.Style.SECONDARY);
         btnEditar.addActionListener(e -> mostrarDialogoEditar());
         toolbar.add(btnEditar);
 
-        F1Button btnEliminar = new F1Button("ðŸ—‘ï¸ Eliminar", F1Button.Style.DANGER);
+        F1Button btnEliminar = new F1Button("[ ELIMINAR ]", F1Button.Style.DANGER);
         btnEliminar.addActionListener(e -> eliminarPiloto());
         toolbar.add(btnEliminar);
 
@@ -101,7 +101,7 @@ public class PanelPilotos extends JPanel {
         for (Piloto p : pilotos) {
             tableModel.addRow(new Object[]{
                     p.getId(), p.getNombre(), p.getEquipo(), p.getRol(),
-                    p.getExperiencia() + " aÃ±os", String.format("%.0f", p.getHabilidad())
+                    p.getExperiencia() + " años", String.format("%.0f", p.getHabilidad())
             });
         }
     }
@@ -124,7 +124,7 @@ public class PanelPilotos extends JPanel {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
             JOptionPane.showMessageDialog(this, "Selecciona un piloto para editar.",
-                    "Sin selecciÃ³n", JOptionPane.WARNING_MESSAGE);
+                    "Sin selección", JOptionPane.WARNING_MESSAGE);
             return;
         }
         int id = (int) tableModel.getValueAt(selectedRow, 0);
@@ -139,14 +139,14 @@ public class PanelPilotos extends JPanel {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
             JOptionPane.showMessageDialog(this, "Selecciona un piloto para eliminar.",
-                    "Sin selecciÃ³n", JOptionPane.WARNING_MESSAGE);
+                    "Sin selección", JOptionPane.WARNING_MESSAGE);
             return;
         }
         int id = (int) tableModel.getValueAt(selectedRow, 0);
         String nombre = (String) tableModel.getValueAt(selectedRow, 1);
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Â¿Eliminar al piloto " + nombre + "?",
-                "Confirmar eliminaciÃ³n", JOptionPane.YES_NO_OPTION);
+                "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             DataManager.getInstance().eliminarPiloto(id);
             refresh();
@@ -171,11 +171,11 @@ public class PanelPilotos extends JPanel {
         JComboBox<String> cmbEquipo = createComboField(formPanel, gbc, "Equipo:", 1,
                 DataManager.getInstance().obtenerNombresEquipos().toArray(new String[0]));
         JComboBox<String> cmbRol = createComboField(formPanel, gbc, "Rol:", 2,
-                new String[]{"LÃ­der", "Escudero"});
-        JTextField txtExperiencia = createField(formPanel, gbc, "Experiencia (aÃ±os):", 3);
+                new String[]{"Líder", "Escudero"});
+        JTextField txtExperiencia = createField(formPanel, gbc, "Experiencia (años):", 3);
         JTextField txtHabilidad = createField(formPanel, gbc, "Habilidad (0-100):", 4);
 
-        // Pre-rellenar si es ediciÃ³n
+        // Pre-rellenar si es edición
         if (pilotoExistente != null) {
             txtNombre.setText(pilotoExistente.getNombre());
             cmbEquipo.setSelectedItem(pilotoExistente.getEquipo());
@@ -219,7 +219,7 @@ public class PanelPilotos extends JPanel {
                 refresh();
                 dialog.dispose();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Valores numÃ©ricos invÃ¡lidos.");
+                JOptionPane.showMessageDialog(dialog, "Valores numéricos inválidos.");
             }
         });
         btnPanel.add(btnGuardar);

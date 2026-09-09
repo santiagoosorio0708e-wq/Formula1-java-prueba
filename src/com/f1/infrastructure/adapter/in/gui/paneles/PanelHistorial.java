@@ -13,7 +13,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Panel de historial de sesiones de clasificaciÃ³n.
+ * Panel de historial de sesiones de clasificación.
  */
 public class PanelHistorial extends JPanel {
 
@@ -33,7 +33,7 @@ public class PanelHistorial extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("ðŸ“Š Historial de Sesiones");
+        JLabel titleLabel = new JLabel(" Historial de Sesiones");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -45,7 +45,7 @@ public class PanelHistorial extends JPanel {
 
         add(headerPanel, BorderLayout.NORTH);
 
-        String[] columns = {"SesiÃ³n #", "Ganador", "Equipo", "Tiempo", "2do Lugar", "3er Lugar", "Total Pilotos"};
+        String[] columns = {"Sesión #", "Ganador", "Equipo", "Tiempo", "2do Lugar", "3er Lugar", "Total Pilotos"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -104,7 +104,7 @@ public class PanelHistorial extends JPanel {
             String tercero = sesion.size() > 2 ? sesion.get(2).getPiloto().getNombre() : "N/A";
 
             tableModel.addRow(new Object[]{
-                    "SesiÃ³n " + (i + 1),
+                    "Sesión " + (i + 1),
                     p1.getPiloto().getNombre(),
                     p1.getEquipo(),
                     p1.getTiempoFormateado(),

@@ -38,7 +38,7 @@ public class PanelCircuitos extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("ðŸ›£ï¸ GestiÃ³n de Circuitos");
+        JLabel titleLabel = new JLabel("> GESTIÓN DE CIRCUITOS _");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -60,11 +60,11 @@ public class PanelCircuitos extends JPanel {
         });
         toolbar.add(searchField);
 
-        F1Button btnAgregar = new F1Button("+ Agregar", F1Button.Style.PRIMARY);
+        F1Button btnAgregar = new F1Button("[+ AGREGAR]", F1Button.Style.PRIMARY);
         btnAgregar.addActionListener(e -> mostrarDialogo(null));
         toolbar.add(btnAgregar);
 
-        F1Button btnEditar = new F1Button("âœï¸ Editar", F1Button.Style.SECONDARY);
+        F1Button btnEditar = new F1Button("[ EDITAR ]", F1Button.Style.SECONDARY);
         btnEditar.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un circuito."); return; }
@@ -73,12 +73,12 @@ public class PanelCircuitos extends JPanel {
         });
         toolbar.add(btnEditar);
 
-        F1Button btnEliminar = new F1Button("ðŸ—‘ï¸ Eliminar", F1Button.Style.DANGER);
+        F1Button btnEliminar = new F1Button("[ ELIMINAR ]", F1Button.Style.DANGER);
         btnEliminar.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un circuito."); return; }
             String nombre = (String) tableModel.getValueAt(row, 0);
-            if (JOptionPane.showConfirmDialog(this, "Â¿Eliminar " + nombre + "?",
+            if (JOptionPane.showConfirmDialog(this, "¿Eliminar " + nombre + "?",
                     "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 DataManager.getInstance().eliminarCircuito(nombre);
                 refresh();
@@ -86,14 +86,14 @@ public class PanelCircuitos extends JPanel {
         });
         toolbar.add(btnEliminar);
 
-        F1Button btnDetalle = new F1Button("ðŸ“‹ Detalle", F1Button.Style.SECONDARY);
+        F1Button btnDetalle = new F1Button("[ DETALLE ]", F1Button.Style.SECONDARY);
         btnDetalle.addActionListener(e -> verDetalle());
         toolbar.add(btnDetalle);
 
         headerPanel.add(toolbar, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
-        String[] columns = {"Nombre", "PaÃ­s", "Longitud (km)", "Vueltas", "Distancia Total", "RÃ©cord"};
+        String[] columns = {"Nombre", "País", "Longitud (km)", "Vueltas", "Distancia Total", "Récord"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -135,14 +135,14 @@ public class PanelCircuitos extends JPanel {
         DataManager dm = DataManager.getInstance();
         StringBuilder html = new StringBuilder("<html><body style='font-family:sans-serif;padding:10px;'>");
         html.append("<h2>").append(c.getNombre()).append("</h2>");
-        html.append("<p><b>PaÃ­s:</b> ").append(c.getPais()).append("</p>");
+        html.append("<p><b>País:</b> ").append(c.getPais()).append("</p>");
         html.append("<p><b>Longitud:</b> ").append(String.format("%.2f km", c.getLongitudKm())).append("</p>");
         html.append("<p><b>Vueltas:</b> ").append(c.getVueltas()).append("</p>");
         html.append("<p><b>Distancia total:</b> ").append(String.format("%.1f km", c.getDistanciaTotal())).append("</p>");
-        html.append("<p><b>DescripciÃ³n:</b> ").append(c.getDescripcion()).append("</p>");
+        html.append("<p><b>Descripción:</b> ").append(c.getDescripcion()).append("</p>");
 
         if (c.getRecord() != null) {
-            html.append("<h3>RÃ©cord de Vuelta</h3>");
+            html.append("<h3>Récord de Vuelta</h3>");
             html.append("<p>").append(c.getRecord().getTiempo())
                     .append(" por ").append(c.getRecord().getPiloto())
                     .append(" (").append(c.getRecord().getAnio()).append(")</p>");
@@ -180,10 +180,10 @@ public class PanelCircuitos extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
 
         JTextField txtNombre = addField(form, gbc, "Nombre:", 0);
-        JTextField txtPais = addField(form, gbc, "PaÃ­s:", 1);
+        JTextField txtPais = addField(form, gbc, "País:", 1);
         JTextField txtLongitud = addField(form, gbc, "Longitud (km):", 2);
         JTextField txtVueltas = addField(form, gbc, "Vueltas:", 3);
-        JTextField txtDescripcion = addField(form, gbc, "DescripciÃ³n:", 4);
+        JTextField txtDescripcion = addField(form, gbc, "Descripción:", 4);
 
         if (existente != null) {
             txtNombre.setText(existente.getNombre());
@@ -220,7 +220,7 @@ public class PanelCircuitos extends JPanel {
                 refresh();
                 dialog.dispose();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Valores numÃ©ricos invÃ¡lidos.");
+                JOptionPane.showMessageDialog(dialog, "Valores numéricos inválidos.");
             }
         });
         btnPanel.add(btnSave);

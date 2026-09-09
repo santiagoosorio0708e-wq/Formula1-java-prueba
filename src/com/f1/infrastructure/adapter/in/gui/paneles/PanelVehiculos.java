@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Panel CRUD para vehÃ­culos con funciÃ³n de comparaciÃ³n.
+ * Panel CRUD para vehículos con función de comparación.
  */
 public class PanelVehiculos extends JPanel {
 
@@ -35,7 +35,7 @@ public class PanelVehiculos extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("ðŸŽï¸ GestiÃ³n de VehÃ­culos");
+        JLabel titleLabel = new JLabel("ðŸŽï¸ Gestión de Vehículos");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -69,14 +69,14 @@ public class PanelVehiculos extends JPanel {
         btnEliminar.addActionListener(e -> eliminarSeleccionado());
         toolbar.add(btnEliminar);
 
-        F1Button btnComparar = new F1Button("ðŸ“Š Comparar", F1Button.Style.SECONDARY);
+        F1Button btnComparar = new F1Button(" Comparar", F1Button.Style.SECONDARY);
         btnComparar.addActionListener(e -> compararVehiculos());
         toolbar.add(btnComparar);
 
         headerPanel.add(toolbar, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
-        String[] columns = {"Equipo", "Modelo", "Motor", "Vel. MÃ¡x (km/h)", "0-100 (s)", "Vel. Normal", "Vel. Agresiva"};
+        String[] columns = {"Equipo", "Modelo", "Motor", "Vel. Máx (km/h)", "0-100 (s)", "Vel. Normal", "Vel. Agresiva"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -112,7 +112,7 @@ public class PanelVehiculos extends JPanel {
 
     private void editarSeleccionado() {
         int row = table.getSelectedRow();
-        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un vehÃ­culo."); return; }
+        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un vehículo."); return; }
         String equipo = (String) tableModel.getValueAt(row, 0);
         String modelo = (String) tableModel.getValueAt(row, 1);
         mostrarDialogo(DataManager.getInstance().obtenerVehiculo(equipo, modelo));
@@ -120,7 +120,7 @@ public class PanelVehiculos extends JPanel {
 
     private void eliminarSeleccionado() {
         int row = table.getSelectedRow();
-        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un vehÃ­culo."); return; }
+        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un vehículo."); return; }
         String equipo = (String) tableModel.getValueAt(row, 0);
         String modelo = (String) tableModel.getValueAt(row, 1);
         if (JOptionPane.showConfirmDialog(this, "Â¿Eliminar " + equipo + " " + modelo + "?",
@@ -132,7 +132,7 @@ public class PanelVehiculos extends JPanel {
 
     private void mostrarDialogo(Vehiculo existente) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this),
-                existente == null ? "Agregar VehÃ­culo" : "Editar VehÃ­culo", true);
+                existente == null ? "Agregar Vehículo" : "Editar Vehículo", true);
         dialog.setSize(420, 320);
         dialog.setLocationRelativeTo(this);
         dialog.getContentPane().setBackground(F1Colors.BG_CARD);
@@ -147,7 +147,7 @@ public class PanelVehiculos extends JPanel {
         JTextField txtEquipo = addField(form, gbc, "Equipo:", 0);
         JTextField txtModelo = addField(form, gbc, "Modelo:", 1);
         JTextField txtMotor = addField(form, gbc, "Motor:", 2);
-        JTextField txtVelMax = addField(form, gbc, "Vel. MÃ¡x (km/h):", 3);
+        JTextField txtVelMax = addField(form, gbc, "Vel. Máx (km/h):", 3);
         JTextField txtAcel = addField(form, gbc, "0-100 (s):", 4);
 
         if (existente != null) {
@@ -188,7 +188,7 @@ public class PanelVehiculos extends JPanel {
                 refresh();
                 dialog.dispose();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Valores numÃ©ricos invÃ¡lidos.");
+                JOptionPane.showMessageDialog(dialog, "Valores numéricos inválidos.");
             }
         });
         btnPanel.add(btnSave);
@@ -202,13 +202,13 @@ public class PanelVehiculos extends JPanel {
         int[] rows = table.getSelectedRows();
         if (rows.length < 2) {
             JOptionPane.showMessageDialog(this,
-                    "Selecciona al menos 2 vehÃ­culos para comparar.\n(Usa Ctrl+Click para selecciÃ³n mÃºltiple)");
+                    "Selecciona al menos 2 vehículos para comparar.\n(Usa Ctrl+Click para selección múltiple)");
             return;
         }
 
         DataManager dm = DataManager.getInstance();
         StringBuilder html = new StringBuilder("<html><body style='font-family:sans-serif;padding:10px;'>");
-        html.append("<h2>ComparaciÃ³n de VehÃ­culos</h2><table border='1' cellpadding='6'>");
+        html.append("<h2>Comparación de Vehículos</h2><table border='1' cellpadding='6'>");
         html.append("<tr><th>Atributo</th>");
 
         Vehiculo[] vehiculos = new Vehiculo[rows.length];
@@ -220,8 +220,8 @@ public class PanelVehiculos extends JPanel {
         }
         html.append("</tr>");
 
-        // Vel mÃ¡xima
-        html.append("<tr><td>Vel. MÃ¡xima</td>");
+        // Vel máxima
+        html.append("<tr><td>Vel. Máxima</td>");
         for (Vehiculo v : vehiculos) html.append("<td>").append(String.format("%.0f km/h", v.getVelocidadMaximaKmh())).append("</td>");
         html.append("</tr>");
 
@@ -249,7 +249,7 @@ public class PanelVehiculos extends JPanel {
         html.append("</table></body></html>");
 
         JOptionPane.showMessageDialog(this, new JLabel(html.toString()),
-                "ComparaciÃ³n", JOptionPane.INFORMATION_MESSAGE);
+                "Comparación", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private JTextField addField(JPanel panel, GridBagConstraints gbc, String label, int row) {

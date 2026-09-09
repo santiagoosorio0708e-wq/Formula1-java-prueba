@@ -12,7 +12,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Panel de configuraciÃ³n del vehÃ­culo antes de iniciar la simulaciÃ³n.
+ * Panel de configuración del vehículo antes de iniciar la simulación.
  */
 public class PanelConfiguracion extends JPanel {
 
@@ -23,7 +23,7 @@ public class PanelConfiguracion extends JPanel {
     private JComboBox<String> cmbCargaAero;
     private JComboBox<String> cmbPresionNeum;
     private JComboBox<String> cmbEstrategiaComb;
-    private JLabel lblPreview;
+    private com.f1.infrastructure.adapter.in.gui.componentes.TrackPreviewPanel trackPreviewPanel;
 
     public PanelConfiguracion(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -39,7 +39,7 @@ public class PanelConfiguracion extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("âš™ï¸ ConfiguraciÃ³n de Carrera");
+        JLabel titleLabel = new JLabel("> CONFIGURACIÓN DE CARRERA _");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -49,7 +49,7 @@ public class PanelConfiguracion extends JPanel {
         JPanel contentPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         contentPanel.setOpaque(false);
 
-        // Columna izquierda: selecciÃ³n
+        // Columna izquierda: selección
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.setBackground(F1Colors.BG_CARD);
@@ -57,7 +57,7 @@ public class PanelConfiguracion extends JPanel {
                 BorderFactory.createLineBorder(F1Colors.BORDER, 1),
                 BorderFactory.createEmptyBorder(20, 20, 20, 20)));
 
-        addSectionTitle(leftPanel, "SelecciÃ³n de Circuito y VehÃ­culo");
+        addSectionTitle(leftPanel, "Selección de Circuito y Vehículo");
 
         List<String> circuitos = DataManager.getInstance().obtenerNombresCircuitos();
         cmbCircuito = addComboField(leftPanel, "Circuito:", circuitos.toArray(new String[0]));
@@ -66,50 +66,42 @@ public class PanelConfiguracion extends JPanel {
         String[] vehiculoNames = vehiculos.stream()
                 .map(v -> v.getEquipo() + " " + v.getModelo())
                 .toArray(String[]::new);
-        cmbVehiculo = addComboField(leftPanel, "VehÃ­culo:", vehiculoNames);
+        cmbVehiculo = addComboField(leftPanel, "Vehículo:", vehiculoNames);
 
         leftPanel.add(Box.createVerticalStrut(20));
-        addSectionTitle(leftPanel, "ConfiguraciÃ³n del VehÃ­culo");
+        addSectionTitle(leftPanel, "Configuración del Vehículo");
 
-        cmbModoConduccion = addComboField(leftPanel, "Modo de ConducciÃ³n:",
+        cmbModoConduccion = addComboField(leftPanel, "Modo de Conducción:",
                 new String[]{"Normal", "Agresivo", "Ahorro"});
-        cmbCargaAero = addComboField(leftPanel, "Carga AerodinÃ¡mica:",
+        cmbCargaAero = addComboField(leftPanel, "Carga Aerodinámica:",
                 new String[]{"Baja", "Media", "Alta"});
-        cmbPresionNeum = addComboField(leftPanel, "PresiÃ³n NeumÃ¡ticos:",
-                new String[]{"Baja", "EstÃ¡ndar", "Alta"});
+        cmbPresionNeum = addComboField(leftPanel, "Presión Neumáticos:",
+                new String[]{"Baja", "Estándar", "Alta"});
         cmbEstrategiaComb = addComboField(leftPanel, "Estrategia Combustible:",
                 new String[]{"Agresiva", "Balanceada", "Ahorro"});
 
         contentPanel.add(leftPanel);
 
-        // Columna derecha: preview y botÃ³n
+        // Columna derecha: preview y botón
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setBackground(F1Colors.BG_CARD);
         rightPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(F1Colors.BORDER, 1),
                 BorderFactory.createEmptyBorder(20, 20, 20, 20)));
 
-        JLabel previewTitle = new JLabel("ðŸ“Š Preview de Rendimiento");
-        previewTitle.setFont(F1Fonts.SUBTITLE);
-        previewTitle.setForeground(F1Colors.TEXT_WHITE);
-        rightPanel.add(previewTitle, BorderLayout.NORTH);
+        trackPreviewPanel = new com.f1.infrastructure.adapter.in.gui.componentes.TrackPreviewPanel();
+        rightPanel.add(trackPreviewPanel, BorderLayout.CENTER);
 
-        lblPreview = new JLabel("<html><body style='color:#a0a0b4;font-size:12px;'>" +
-                "<p>Selecciona un circuito y vehÃ­culo para ver el rendimiento estimado.</p></body></html>");
-        lblPreview.setFont(F1Fonts.BODY);
-        lblPreview.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
-        rightPanel.add(lblPreview, BorderLayout.CENTER);
-
-        // Botones de acciÃ³n
+        // Botones de acción
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         actionPanel.setOpaque(false);
 
-        F1Button btnPreview = new F1Button("ðŸ”„ Actualizar Preview", F1Button.Style.SECONDARY);
+        F1Button btnPreview = new F1Button("[ ACTUALIZAR PREVIEW ]", F1Button.Style.SECONDARY);
         btnPreview.setPreferredSize(new Dimension(200, 40));
         btnPreview.addActionListener(e -> actualizarPreview());
         actionPanel.add(btnPreview);
 
-        F1Button btnIniciar = new F1Button("â–¶ï¸ INICIAR SIMULACIÃ“N", F1Button.Style.PRIMARY);
+        F1Button btnIniciar = new F1Button("[ INICIAR SIMULACIÓN ]", F1Button.Style.PRIMARY);
         btnIniciar.setPreferredSize(new Dimension(250, 45));
         btnIniciar.addActionListener(e -> iniciarSimulacion());
         actionPanel.add(btnIniciar);
@@ -126,6 +118,11 @@ public class PanelConfiguracion extends JPanel {
         cmbCargaAero.addActionListener(e -> actualizarPreview());
         cmbPresionNeum.addActionListener(e -> actualizarPreview());
         cmbEstrategiaComb.addActionListener(e -> actualizarPreview());
+        
+        // Inicializar preview inicial si hay datos
+        if (cmbCircuito.getItemCount() > 0) {
+            actualizarPreview();
+        }
     }
 
     private void addSectionTitle(JPanel panel, String text) {
@@ -186,18 +183,14 @@ public class PanelConfiguracion extends JPanel {
 
     private void actualizarPreview() {
         ConfiguracionVehiculo config = crearConfiguracion();
-        String html = String.format(
-                "<html><body style='color:#e6e6f0;font-size:12px;'>" +
-                "<p><b>Factor de Rendimiento:</b> %.3f</p>" +
-                "<p><b>Factor de Desgaste:</b> %.3f</p>" +
-                "<p><b>Factor de Consumo:</b> %.3f</p>" +
-                "<br><p style='color:#a0a0b4;'>Factor < 1.0 = mÃ¡s rÃ¡pido/menos consumo</p>" +
-                "<p style='color:#a0a0b4;'>Factor > 1.0 = mÃ¡s lento/mÃ¡s consumo</p>" +
-                "</body></html>",
-                config.calcularFactorRendimiento(),
-                config.calcularFactorDesgaste(),
-                config.calcularFactorConsumo());
-        lblPreview.setText(html);
+        String circuitoNombre = (String) cmbCircuito.getSelectedItem();
+        Circuito circuito = null;
+        if (circuitoNombre != null) {
+            circuito = DataManager.getInstance().obtenerCircuito(circuitoNombre);
+        }
+        if (trackPreviewPanel != null) {
+            trackPreviewPanel.setPreviewData(circuito, config);
+        }
     }
 
     private void iniciarSimulacion() {
@@ -215,7 +208,7 @@ public class PanelConfiguracion extends JPanel {
             return;
         }
 
-        // Ir al panel de simulaciÃ³n y comenzar
+        // Ir al panel de simulación y comenzar
         mainFrame.getPanelSimulacion().iniciarSimulacion(circuito, config);
         mainFrame.selectPanel("SIMULACION");
     }
