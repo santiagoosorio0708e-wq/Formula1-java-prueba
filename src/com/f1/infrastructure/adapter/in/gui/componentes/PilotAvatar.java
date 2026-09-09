@@ -18,7 +18,7 @@ public class PilotAvatar extends JComponent {
     public PilotAvatar(Color teamColor) {
         this.teamColor = teamColor;
         this.isHovered = false;
-        setPreferredSize(new Dimension(140, 140));
+        setPreferredSize(new Dimension(90, 90));
     }
 
     public void setTeamColor(Color color) {

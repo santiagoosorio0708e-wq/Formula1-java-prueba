@@ -30,7 +30,7 @@ public class PilotCard extends JPanel {
         
         setLayout(new BorderLayout());
         setBackground(F1Colors.BG_CARD);
-        setPreferredSize(new Dimension(160, 220));
+        setPreferredSize(new Dimension(130, 170));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         // Borde inicial

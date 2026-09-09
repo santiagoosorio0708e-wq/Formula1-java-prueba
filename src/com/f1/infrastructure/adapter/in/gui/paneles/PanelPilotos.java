@@ -81,8 +81,8 @@ public class PanelPilotos extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // --- ZONA CENTRAL (GRID) ---
-        // Usamos GridLayout(2, 0) para forzar 2 filas y que crezca horizontalmente infinitamente
-        gridPanel = new JPanel(new GridLayout(2, 0, 15, 15));
+        // Usamos GridLayout(3, 7) como solicitó el usuario para que no queden cortados
+        gridPanel = new JPanel(new GridLayout(3, 7, 10, 10));
         gridPanel.setBackground(F1Colors.BG_DARK);
         
         // Contenedor extra para centrar verticalmente si es necesario
@@ -99,8 +99,10 @@ public class PanelPilotos extends JPanel {
         scrollPane.setBackground(F1Colors.BG_DARK);
         scrollPane.getViewport().setBackground(F1Colors.BG_DARK);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(20);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        // Mostrar barras si son necesarias, pero el 3x7 debería caber
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         
         // Personalizar la barra de desplazamiento horizontal estilo juego
         scrollPane.getHorizontalScrollBar().setUI(new BasicScrollBarUI() {
