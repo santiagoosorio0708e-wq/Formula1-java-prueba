@@ -44,7 +44,7 @@ public final class F1Fonts {
     public static final Font BODY_SMALL_BOLD = new Font(FONT_FAMILY, Font.BOLD, 12);
 
     // ==================== ESPECIALES ====================
-    public static final Font BUTTON = new Font(FONT_FAMILY, Font.BOLD, 13);
+    public static final Font BUTTON = new Font(FONT_FAMILY, Font.BOLD | Font.ITALIC, 14);
     public static final Font TABLE_HEADER = new Font(FONT_FAMILY, Font.BOLD, 13);
     public static final Font TABLE_CELL = new Font(FONT_FAMILY, Font.PLAIN, 13);
     public static final Font INPUT = new Font(FONT_FAMILY, Font.PLAIN, 14);
