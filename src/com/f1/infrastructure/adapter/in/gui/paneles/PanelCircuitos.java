@@ -85,15 +85,55 @@ public class PanelCircuitos extends JPanel {
         viewGrid.add(headerPanel, BorderLayout.NORTH);
 
         // --- GRID ---
-        gridPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        gridPanel = new JPanel(new GridLayout(0, 4, 30, 30));
         gridPanel.setBackground(F1Colors.BG_DARK);
 
-        JScrollPane scrollPane = new JScrollPane(gridPanel);
+        JPanel gridWrapper = new JPanel(new BorderLayout());
+        gridWrapper.setBackground(F1Colors.BG_DARK);
+        gridWrapper.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        gridWrapper.add(gridPanel, BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane(gridWrapper);
         scrollPane.setBorder(null);
         scrollPane.setBackground(F1Colors.BG_DARK);
         scrollPane.getViewport().setBackground(F1Colors.BG_DARK);
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        
+        // Personalizar la barra de desplazamiento
+        scrollPane.getVerticalScrollBar().setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
+            @Override
+            protected void configureScrollBarColors() {
+                this.thumbColor = new Color(70, 70, 90);
+                this.trackColor = F1Colors.BG_DARK;
+            }
+            @Override
+            protected JButton createDecreaseButton(int orientation) { return createZeroButton(); }
+            @Override
+            protected JButton createIncreaseButton(int orientation) { return createZeroButton(); }
+            private JButton createZeroButton() {
+                JButton jbutton = new JButton();
+                jbutton.setPreferredSize(new Dimension(0, 0));
+                return jbutton;
+            }
+            @Override
+            protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+                if(thumbBounds.isEmpty() || !scrollbar.isEnabled()) return;
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(isDragging ? F1Colors.F1_RED : thumbColor);
+                g2.fillRoundRect(thumbBounds.x + 4, thumbBounds.y, thumbBounds.width - 8, thumbBounds.height, 8, 8);
+                g2.dispose();
+            }
+            @Override
+            protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(trackColor);
+                g2.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
+                g2.dispose();
+            }
+        });
 
         viewGrid.add(scrollPane, BorderLayout.CENTER);
 

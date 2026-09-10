@@ -28,7 +28,7 @@ public class CircuitCard extends JPanel {
         
         setLayout(new BorderLayout());
         setBackground(F1Colors.BG_CARD);
-        setPreferredSize(new Dimension(180, 160));
+        setPreferredSize(new Dimension(240, 220));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         setBorder(BorderFactory.createLineBorder(new Color(40, 40, 50), 1));
