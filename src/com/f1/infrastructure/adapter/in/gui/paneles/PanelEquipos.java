@@ -36,7 +36,7 @@ public class PanelEquipos extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("ðŸ¢ Gestión de Equipos");
+        JLabel titleLabel = new JLabel("GESTIÓN DE EQUIPOS");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -58,11 +58,11 @@ public class PanelEquipos extends JPanel {
         });
         toolbar.add(searchField);
 
-        F1Button btnAgregar = new F1Button("+ Agregar", F1Button.Style.PRIMARY);
+        F1Button btnAgregar = new F1Button("Agregar", F1Button.Style.PRIMARY);
         btnAgregar.addActionListener(e -> mostrarDialogo(null));
         toolbar.add(btnAgregar);
 
-        F1Button btnEditar = new F1Button("âœï¸ Editar", F1Button.Style.SECONDARY);
+        F1Button btnEditar = new F1Button("Editar", F1Button.Style.SECONDARY);
         btnEditar.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un equipo."); return; }
@@ -71,7 +71,7 @@ public class PanelEquipos extends JPanel {
         });
         toolbar.add(btnEditar);
 
-        F1Button btnEliminar = new F1Button("ðŸ—‘ï¸ Eliminar", F1Button.Style.DANGER);
+        F1Button btnEliminar = new F1Button("Eliminar", F1Button.Style.DANGER);
         btnEliminar.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un equipo."); return; }

@@ -57,7 +57,7 @@ public class PanelSimulacion extends JPanel implements SimulacionListener {
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         controlPanel.setOpaque(false);
 
-        btnIniciar = new F1Button("â–¶ï¸ Iniciar", F1Button.Style.SUCCESS);
+        btnIniciar = new F1Button("Iniciar", F1Button.Style.SUCCESS);
         btnIniciar.addActionListener(e -> {
             if (motor != null && !motor.isEnCurso()) {
                 motor.iniciarCarrera();
@@ -67,17 +67,17 @@ public class PanelSimulacion extends JPanel implements SimulacionListener {
         });
         controlPanel.add(btnIniciar);
 
-        btnPausar = new F1Button("â¸ï¸ Pausar", F1Button.Style.SECONDARY);
+        btnPausar = new F1Button("Pausar", F1Button.Style.SECONDARY);
         btnPausar.addActionListener(e -> {
             if (motor != null && motor.isEnCurso()) {
                 motor.togglePausa();
-                btnPausar.setText(motor.isPausado() ? "â–¶ï¸ Reanudar" : "â¸ï¸ Pausar");
-                lblEstado.setText(motor.isPausado() ? "â¸ï¸ PAUSADO" : "ðŸŸ¢ EN CURSO");
+                btnPausar.setText(motor.isPausado() ? "Reanudar" : "Pausar");
+                lblEstado.setText(motor.isPausado() ? "PAUSADO" : "EN CURSO");
             }
         });
         controlPanel.add(btnPausar);
 
-        btnDetener = new F1Button("â¹ï¸ Detener", F1Button.Style.DANGER);
+        btnDetener = new F1Button("Detener", F1Button.Style.DANGER);
         btnDetener.addActionListener(e -> {
             if (motor != null) {
                 motor.detenerCarrera();

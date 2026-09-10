@@ -54,7 +54,7 @@ public class PanelCircuitos extends JPanel {
         headerPanel.setBackground(F1Colors.BG_DARK);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel titleLabel = new JLabel("> GESTIÓN DE CIRCUITOS _");
+        JLabel titleLabel = new JLabel("GESTIÓN DE CIRCUITOS");
         titleLabel.setFont(F1Fonts.TITLE_LARGE);
         titleLabel.setForeground(F1Colors.TEXT_PRIMARY);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -77,7 +77,7 @@ public class PanelCircuitos extends JPanel {
         btnBuscar.addActionListener(e -> filtrar());
         toolbar.add(btnBuscar);
 
-        F1Button btnAgregar = new F1Button("[+ AGREGAR]", F1Button.Style.PRIMARY);
+        F1Button btnAgregar = new F1Button("AGREGAR", F1Button.Style.PRIMARY);
         btnAgregar.addActionListener(e -> mostrarDialogo(null));
         toolbar.add(btnAgregar);
 
@@ -149,19 +149,19 @@ public class PanelCircuitos extends JPanel {
         header.setBackground(new Color(20, 20, 30));
         header.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         
-        F1Button btnVolver = new F1Button("[ < VOLVER ]", F1Button.Style.SECONDARY);
+        F1Button btnVolver = new F1Button("< VOLVER", F1Button.Style.SECONDARY);
         btnVolver.addActionListener(e -> cardLayout.show(this, "GRID"));
         header.add(btnVolver, BorderLayout.WEST);
 
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         actionsPanel.setOpaque(false);
         
-        F1Button btnEditar = new F1Button("[ EDITAR ]", F1Button.Style.SECONDARY);
+        F1Button btnEditar = new F1Button("EDITAR", F1Button.Style.SECONDARY);
         btnEditar.addActionListener(e -> {
             if (circuitoSeleccionado != null) mostrarDialogo(circuitoSeleccionado);
         });
         
-        F1Button btnEliminar = new F1Button("[ ELIMINAR ]", F1Button.Style.DANGER);
+        F1Button btnEliminar = new F1Button("ELIMINAR", F1Button.Style.DANGER);
         btnEliminar.addActionListener(e -> {
             if (circuitoSeleccionado != null) {
                 if (JOptionPane.showConfirmDialog(this, "¿Eliminar " + circuitoSeleccionado.getNombre() + "?",

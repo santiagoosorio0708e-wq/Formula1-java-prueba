@@ -46,7 +46,7 @@ public class PanelPilotos extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("> GESTIÓN DE PILOTOS _");
+        JLabel titleLabel = new JLabel("GESTIÓN DE PILOTOS");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -72,7 +72,7 @@ public class PanelPilotos extends JPanel {
         });
         toolbar.add(searchField);
 
-        F1Button btnAgregar = new F1Button("[+ AGREGAR PILOTO]", F1Button.Style.PRIMARY);
+        F1Button btnAgregar = new F1Button("AGREGAR PILOTO", F1Button.Style.PRIMARY);
         btnAgregar.setPreferredSize(new Dimension(180, 40));
         btnAgregar.addActionListener(e -> mostrarDialogoAgregar());
         toolbar.add(btnAgregar);
@@ -209,10 +209,10 @@ public class PanelPilotos extends JPanel {
         JPanel actionsPanel = new JPanel(new GridLayout(2, 1, 0, 10));
         actionsPanel.setOpaque(false);
         
-        F1Button btnEditar = new F1Button("[ EDITAR ]", F1Button.Style.SECONDARY);
+        F1Button btnEditar = new F1Button("EDITAR", F1Button.Style.SECONDARY);
         btnEditar.addActionListener(e -> mostrarDialogoEditar());
         
-        F1Button btnEliminar = new F1Button("[ ELIMINAR ]", F1Button.Style.DANGER);
+        F1Button btnEliminar = new F1Button("ELIMINAR", F1Button.Style.DANGER);
         btnEliminar.addActionListener(e -> eliminarPiloto());
         
         actionsPanel.add(btnEditar);

@@ -36,7 +36,7 @@ public class PanelPodio extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
-        JLabel titleLabel = new JLabel("> CLASIFICACIÓN FINAL Y PODIO _");
+        JLabel titleLabel = new JLabel("CLASIFICACIÓN FINAL Y PODIO");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);

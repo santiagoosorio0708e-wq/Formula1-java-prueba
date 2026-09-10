@@ -33,7 +33,7 @@ public class PanelHistorial extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel(" Historial de Sesiones");
+        JLabel titleLabel = new JLabel("HISTORIAL DE SESIONES");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);

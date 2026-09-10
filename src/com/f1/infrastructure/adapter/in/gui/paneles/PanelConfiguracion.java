@@ -39,7 +39,7 @@ public class PanelConfiguracion extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("> CONFIGURACIÓN DE CARRERA _");
+        JLabel titleLabel = new JLabel("CONFIGURACIÓN DE CARRERA");
         titleLabel.setFont(F1Fonts.TITLE);
         titleLabel.setForeground(F1Colors.TEXT_WHITE);
         headerPanel.add(titleLabel, BorderLayout.WEST);
@@ -96,12 +96,12 @@ public class PanelConfiguracion extends JPanel {
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         actionPanel.setOpaque(false);
 
-        F1Button btnPreview = new F1Button("[ ACTUALIZAR PREVIEW ]", F1Button.Style.SECONDARY);
+        F1Button btnPreview = new F1Button("ACTUALIZAR PREVIEW", F1Button.Style.SECONDARY);
         btnPreview.setPreferredSize(new Dimension(200, 40));
         btnPreview.addActionListener(e -> actualizarPreview());
         actionPanel.add(btnPreview);
 
-        F1Button btnIniciar = new F1Button("[ INICIAR SIMULACIÓN ]", F1Button.Style.PRIMARY);
+        F1Button btnIniciar = new F1Button("INICIAR SIMULACIÓN", F1Button.Style.PRIMARY);
         btnIniciar.setPreferredSize(new Dimension(250, 45));
         btnIniciar.addActionListener(e -> iniciarSimulacion());
         actionPanel.add(btnIniciar);
