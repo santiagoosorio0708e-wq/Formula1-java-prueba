@@ -1,105 +1,241 @@
 package com.f1.infrastructure.adapter.in.gui.paneles;
 
-import com.f1.infrastructure.adapter.out.persistence.DataManager;
-import com.f1.infrastructure.adapter.in.gui.componentes.F1Button;
-import com.f1.infrastructure.adapter.in.gui.componentes.F1Table;
-import com.f1.infrastructure.adapter.in.gui.util.F1Colors;
-import com.f1.infrastructure.adapter.in.gui.util.F1Fonts;
 import com.f1.domain.model.Circuito;
 import com.f1.domain.model.GanadorHistorico;
 import com.f1.domain.model.Piloto;
-import com.f1.domain.model.RecordVuelta;
+import com.f1.infrastructure.adapter.in.gui.componentes.CircuitCard;
+import com.f1.infrastructure.adapter.in.gui.componentes.F1Button;
+import com.f1.infrastructure.adapter.in.gui.componentes.TrackPreviewPanel;
+import com.f1.infrastructure.adapter.in.gui.util.F1Colors;
+import com.f1.infrastructure.adapter.in.gui.util.F1Fonts;
+import com.f1.infrastructure.adapter.out.persistence.DataManager;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-/**
- * Panel CRUD para circuitos con historial de ganadores.
- */
 public class PanelCircuitos extends JPanel {
 
-    private F1Table table;
-    private DefaultTableModel tableModel;
+    private JPanel gridPanel;
     private JTextField searchField;
+    private CardLayout cardLayout;
+    
+    // Panel de detalles (Overlay)
+    private JPanel detailContainer;
+    private TrackPreviewPanel trackPreview;
+    private JPanel detailStatsPanel;
+    private Circuito circuitoSeleccionado;
 
     public PanelCircuitos() {
+        cardLayout = new CardLayout();
+        setLayout(cardLayout);
         setBackground(F1Colors.BG_DARK);
-        setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
-        initComponents();
+
+        // Vista 1: Grid de Circuitos
+        JPanel viewGrid = crearVistaGrid();
+        
+        // Vista 2: Detalle de Circuito
+        JPanel viewDetail = crearVistaDetalle();
+
+        add(viewGrid, "GRID");
+        add(viewDetail, "DETAIL");
+
+        cardLayout.show(this, "GRID");
     }
 
-    private void initComponents() {
+    private JPanel crearVistaGrid() {
+        JPanel viewGrid = new JPanel(new BorderLayout());
+        viewGrid.setBackground(F1Colors.BG_DARK);
+
+        // --- CABECERA ---
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setOpaque(false);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+        headerPanel.setBackground(F1Colors.BG_DARK);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JLabel titleLabel = new JLabel("> GESTIÓN DE CIRCUITOS _");
-        titleLabel.setFont(F1Fonts.TITLE);
-        titleLabel.setForeground(F1Colors.TEXT_WHITE);
+        titleLabel.setFont(F1Fonts.TITLE_LARGE);
+        titleLabel.setForeground(F1Colors.TEXT_PRIMARY);
         headerPanel.add(titleLabel, BorderLayout.WEST);
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         toolbar.setOpaque(false);
 
-        searchField = new JTextField(18);
+        searchField = new JTextField(15);
         searchField.setFont(F1Fonts.INPUT);
         searchField.setBackground(F1Colors.BG_INPUT);
         searchField.setForeground(F1Colors.TEXT_PRIMARY);
         searchField.setCaretColor(F1Colors.TEXT_PRIMARY);
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(F1Colors.BORDER, 1),
-                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
-        searchField.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyReleased(java.awt.event.KeyEvent e) { filtrar(); }
-        });
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+        searchField.addActionListener(e -> filtrar());
         toolbar.add(searchField);
+
+        F1Button btnBuscar = new F1Button("BUSCAR", F1Button.Style.SECONDARY);
+        btnBuscar.addActionListener(e -> filtrar());
+        toolbar.add(btnBuscar);
 
         F1Button btnAgregar = new F1Button("[+ AGREGAR]", F1Button.Style.PRIMARY);
         btnAgregar.addActionListener(e -> mostrarDialogo(null));
         toolbar.add(btnAgregar);
 
+        headerPanel.add(toolbar, BorderLayout.EAST);
+        viewGrid.add(headerPanel, BorderLayout.NORTH);
+
+        // --- GRID ---
+        gridPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        gridPanel.setBackground(F1Colors.BG_DARK);
+
+        JScrollPane scrollPane = new JScrollPane(gridPanel);
+        scrollPane.setBorder(null);
+        scrollPane.setBackground(F1Colors.BG_DARK);
+        scrollPane.getViewport().setBackground(F1Colors.BG_DARK);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        viewGrid.add(scrollPane, BorderLayout.CENTER);
+
+        return viewGrid;
+    }
+
+    private JPanel crearVistaDetalle() {
+        detailContainer = new JPanel(new BorderLayout());
+        detailContainer.setBackground(F1Colors.BG_DARK);
+
+        // Cabecera Detalle
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(20, 20, 30));
+        header.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        
+        F1Button btnVolver = new F1Button("[ < VOLVER ]", F1Button.Style.SECONDARY);
+        btnVolver.addActionListener(e -> cardLayout.show(this, "GRID"));
+        header.add(btnVolver, BorderLayout.WEST);
+
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        actionsPanel.setOpaque(false);
+        
         F1Button btnEditar = new F1Button("[ EDITAR ]", F1Button.Style.SECONDARY);
         btnEditar.addActionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un circuito."); return; }
-            String nombre = (String) tableModel.getValueAt(row, 0);
-            mostrarDialogo(DataManager.getInstance().obtenerCircuito(nombre));
+            if (circuitoSeleccionado != null) mostrarDialogo(circuitoSeleccionado);
         });
-        toolbar.add(btnEditar);
-
+        
         F1Button btnEliminar = new F1Button("[ ELIMINAR ]", F1Button.Style.DANGER);
         btnEliminar.addActionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un circuito."); return; }
-            String nombre = (String) tableModel.getValueAt(row, 0);
-            if (JOptionPane.showConfirmDialog(this, "¿Eliminar " + nombre + "?",
-                    "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                DataManager.getInstance().eliminarCircuito(nombre);
-                refresh();
+            if (circuitoSeleccionado != null) {
+                if (JOptionPane.showConfirmDialog(this, "¿Eliminar " + circuitoSeleccionado.getNombre() + "?",
+                        "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    DataManager.getInstance().eliminarCircuito(circuitoSeleccionado.getNombre());
+                    refresh();
+                    cardLayout.show(this, "GRID");
+                }
             }
         });
-        toolbar.add(btnEliminar);
 
-        F1Button btnDetalle = new F1Button("[ DETALLE ]", F1Button.Style.SECONDARY);
-        btnDetalle.addActionListener(e -> verDetalle());
-        toolbar.add(btnDetalle);
+        actionsPanel.add(btnEditar);
+        actionsPanel.add(btnEliminar);
+        header.add(actionsPanel, BorderLayout.EAST);
 
-        headerPanel.add(toolbar, BorderLayout.EAST);
-        add(headerPanel, BorderLayout.NORTH);
+        detailContainer.add(header, BorderLayout.NORTH);
 
-        String[] columns = {"Nombre", "País", "Longitud (km)", "Vueltas", "Distancia Total", "Récord"};
-        tableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        table = new F1Table(tableModel);
-        add(table.wrapInScrollPane(), BorderLayout.CENTER);
+        // Centro (Preview y Stats)
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setOpaque(false);
+
+        trackPreview = new TrackPreviewPanel();
+        contentPanel.add(trackPreview, BorderLayout.CENTER);
+
+        detailStatsPanel = new JPanel();
+        detailStatsPanel.setLayout(new BoxLayout(detailStatsPanel, BoxLayout.Y_AXIS));
+        detailStatsPanel.setPreferredSize(new Dimension(350, 0));
+        detailStatsPanel.setBackground(F1Colors.BG_CARD);
+        detailStatsPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 2, 0, 0, F1Colors.F1_RED),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+
+        contentPanel.add(detailStatsPanel, BorderLayout.EAST);
+        detailContainer.add(contentPanel, BorderLayout.CENTER);
+
+        return detailContainer;
+    }
+
+    private void abrirDetalle(Circuito c) {
+        circuitoSeleccionado = c;
+        trackPreview.setPreviewData(c, null); // Sin config por ahora
+        actualizarStatsDetalle(c);
+        cardLayout.show(this, "DETAIL");
+    }
+
+    private void actualizarStatsDetalle(Circuito c) {
+        detailStatsPanel.removeAll();
+
+        JLabel lblName = new JLabel("<html><div style='width:300px;'>" + c.getNombre().toUpperCase() + "</div></html>");
+        lblName.setFont(F1Fonts.TITLE);
+        lblName.setForeground(F1Colors.TEXT_WHITE);
+        detailStatsPanel.add(lblName);
+
+        detailStatsPanel.add(Box.createVerticalStrut(10));
+
+        JLabel lblPais = new JLabel("País: " + c.getPais());
+        lblPais.setFont(F1Fonts.BODY_BOLD);
+        lblPais.setForeground(F1Colors.F1_RED);
+        detailStatsPanel.add(lblPais);
+
+        detailStatsPanel.add(Box.createVerticalStrut(20));
+
+        agregarStatUI("Longitud:", String.format("%.2f km", c.getLongitudKm()));
+        agregarStatUI("Vueltas:", String.valueOf(c.getVueltas()));
+        agregarStatUI("Distancia Total:", String.format("%.1f km", c.getDistanciaTotal()));
+
+        detailStatsPanel.add(Box.createVerticalStrut(20));
+
+        JTextArea txtDesc = new JTextArea(c.getDescripcion());
+        txtDesc.setFont(F1Fonts.BODY_SMALL);
+        txtDesc.setForeground(F1Colors.TEXT_SECONDARY);
+        txtDesc.setLineWrap(true);
+        txtDesc.setWrapStyleWord(true);
+        txtDesc.setOpaque(false);
+        txtDesc.setEditable(false);
+        txtDesc.setFocusable(false);
+        detailStatsPanel.add(txtDesc);
+
+        if (c.getRecord() != null) {
+            detailStatsPanel.add(Box.createVerticalStrut(20));
+            JLabel lblRec = new JLabel("RÉCORD DE VUELTA");
+            lblRec.setFont(F1Fonts.BODY_BOLD);
+            lblRec.setForeground(F1Colors.TEXT_WHITE);
+            detailStatsPanel.add(lblRec);
+            
+            JLabel recData = new JLabel(c.getRecord().getTiempo() + " - " + c.getRecord().getPiloto() + " (" + c.getRecord().getAnio() + ")");
+            recData.setFont(F1Fonts.BODY);
+            recData.setForeground(F1Colors.TEXT_MUTED);
+            detailStatsPanel.add(recData);
+        }
+
+        detailStatsPanel.revalidate();
+        detailStatsPanel.repaint();
+    }
+
+    private void agregarStatUI(String label, String value) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setOpaque(false);
+        p.setMaximumSize(new Dimension(400, 25));
+        
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(F1Fonts.BODY);
+        lbl.setForeground(F1Colors.TEXT_SECONDARY);
+        
+        JLabel val = new JLabel(value);
+        val.setFont(F1Fonts.BODY_BOLD);
+        val.setForeground(F1Colors.TEXT_WHITE);
+        
+        p.add(lbl, BorderLayout.WEST);
+        p.add(val, BorderLayout.EAST);
+        
+        detailStatsPanel.add(p);
+        detailStatsPanel.add(Box.createVerticalStrut(5));
     }
 
     public void refresh() {
@@ -107,15 +243,21 @@ public class PanelCircuitos extends JPanel {
     }
 
     private void cargarDatos(List<Circuito> circuitos) {
-        tableModel.setRowCount(0);
+        gridPanel.removeAll();
         for (Circuito c : circuitos) {
-            tableModel.addRow(new Object[]{
-                    c.getNombre(), c.getPais(),
-                    String.format("%.2f", c.getLongitudKm()),
-                    c.getVueltas(),
-                    String.format("%.1f km", c.getDistanciaTotal()),
-                    c.getRecord() != null ? c.getRecord().toString() : "N/A"
-            });
+            CircuitCard card = new CircuitCard(c, this::abrirDetalle);
+            gridPanel.add(card);
+        }
+        gridPanel.revalidate();
+        gridPanel.repaint();
+        
+        if (circuitoSeleccionado != null) {
+            Circuito act = DataManager.getInstance().obtenerCircuito(circuitoSeleccionado.getNombre());
+            if (act != null) {
+                abrirDetalle(act);
+            } else {
+                cardLayout.show(this, "GRID");
+            }
         }
     }
 
@@ -123,46 +265,6 @@ public class PanelCircuitos extends JPanel {
         String t = searchField.getText().trim();
         cargarDatos(t.isEmpty() ? DataManager.getInstance().listarCircuitos()
                 : DataManager.getInstance().buscarCircuitos(t));
-    }
-
-    private void verDetalle() {
-        int row = table.getSelectedRow();
-        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecciona un circuito."); return; }
-        String nombre = (String) tableModel.getValueAt(row, 0);
-        Circuito c = DataManager.getInstance().obtenerCircuito(nombre);
-        if (c == null) return;
-
-        DataManager dm = DataManager.getInstance();
-        StringBuilder html = new StringBuilder("<html><body style='font-family:sans-serif;padding:10px;'>");
-        html.append("<h2>").append(c.getNombre()).append("</h2>");
-        html.append("<p><b>País:</b> ").append(c.getPais()).append("</p>");
-        html.append("<p><b>Longitud:</b> ").append(String.format("%.2f km", c.getLongitudKm())).append("</p>");
-        html.append("<p><b>Vueltas:</b> ").append(c.getVueltas()).append("</p>");
-        html.append("<p><b>Distancia total:</b> ").append(String.format("%.1f km", c.getDistanciaTotal())).append("</p>");
-        html.append("<p><b>Descripción:</b> ").append(c.getDescripcion()).append("</p>");
-
-        if (c.getRecord() != null) {
-            html.append("<h3>Récord de Vuelta</h3>");
-            html.append("<p>").append(c.getRecord().getTiempo())
-                    .append(" por ").append(c.getRecord().getPiloto())
-                    .append(" (").append(c.getRecord().getAnio()).append(")</p>");
-        }
-
-        if (!c.getGanadores().isEmpty()) {
-            html.append("<h3>Historial de Ganadores</h3><table border='1' cellpadding='4'>");
-            html.append("<tr><th>Temporada</th><th>Ganador</th></tr>");
-            for (GanadorHistorico g : c.getGanadores()) {
-                Piloto p = dm.obtenerPiloto(g.getPilotoId());
-                html.append("<tr><td>").append(g.getTemporada()).append("</td><td>")
-                        .append(p != null ? p.getNombre() : "ID:" + g.getPilotoId())
-                        .append("</td></tr>");
-            }
-            html.append("</table>");
-        }
-
-        html.append("</body></html>");
-        JOptionPane.showMessageDialog(this, new JLabel(html.toString()),
-                "Detalle: " + c.getNombre(), JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void mostrarDialogo(Circuito existente) {
@@ -207,7 +309,7 @@ public class PanelCircuitos extends JPanel {
                 String nom = txtNombre.getText().trim();
                 if (nom.isEmpty()) { JOptionPane.showMessageDialog(dialog, "Nombre requerido."); return; }
                 Circuito c = new Circuito(nom, txtPais.getText().trim(),
-                        Double.parseDouble(txtLongitud.getText().trim()),
+                        Double.parseDouble(txtLongitud.getText().trim().replace(",", ".")),
                         Integer.parseInt(txtVueltas.getText().trim()),
                         txtDescripcion.getText().trim(),
                         existente != null ? existente.getRecord() : null,

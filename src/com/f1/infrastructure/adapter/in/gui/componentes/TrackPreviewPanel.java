@@ -49,14 +49,18 @@ public class TrackPreviewPanel extends JPanel {
             this.trackInfo = String.format("%s | %.2f km | %d Vueltas", circuito.getPais(), circuito.getLongitudKm(), circuito.getVueltas());
             
             // Buscar path por nombre aproximado
-            String match = "DEFAULT";
+            String match = null;
             for (String key : trackPaths.keySet()) {
-                if (trackName.toLowerCase().contains(key.toLowerCase())) {
+                if (trackName.toLowerCase().contains(key.toLowerCase()) && !key.equals("DEFAULT")) {
                     match = key;
                     break;
                 }
             }
-            setCurrentPath(trackPaths.get(match));
+            if (match != null) {
+                setCurrentPath(trackPaths.get(match));
+            } else {
+                setCurrentPath(generateRandomTrack(trackName));
+            }
         } else {
             this.trackName = "NO SIGNAL";
             this.trackInfo = "Esperando selección...";
@@ -129,6 +133,34 @@ public class TrackPreviewPanel extends JPanel {
             currentLen += segLen;
         }
         return pathPoints.get(pathPoints.size()-1);
+    }
+    
+    private Path2D generateRandomTrack(String name) {
+        java.util.Random r = new java.util.Random(name.toLowerCase().hashCode());
+        Path2D p = new Path2D.Double();
+        
+        int numPoints = 8 + r.nextInt(6);
+        double[] x = new double[numPoints];
+        double[] y = new double[numPoints];
+        
+        // Círculo base con deformaciones (radios aleatorios)
+        for (int i = 0; i < numPoints; i++) {
+            double angle = (Math.PI * 2 * i) / numPoints;
+            double radius = 0.2 + (r.nextDouble() * 0.7);
+            x[i] = 0.5 + Math.cos(angle) * radius;
+            y[i] = 0.5 + Math.sin(angle) * radius;
+        }
+        
+        p.moveTo(x[0], y[0]);
+        for (int i = 1; i < numPoints; i++) {
+            int prev = (i - 1 + numPoints) % numPoints;
+            int next = (i + 1) % numPoints;
+            double cx = x[prev] + (x[i] - x[prev]) * 0.5;
+            double cy = y[prev] + (y[i] - y[prev]) * 0.5;
+            p.curveTo(cx, cy, x[i], y[i], x[next], y[next]);
+        }
+        p.closePath();
+        return p;
     }
     
     private void initPaths() {
